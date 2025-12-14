@@ -1,28 +1,24 @@
-const express = require("express");
-const {
-  createSweet,
-  getSweets,
-  searchSweets,
+const express = require('express');
+const router = express.Router();
+const { 
+  createSweet, 
+  getSweets, 
+  searchSweets, 
+  purchaseSweet,
   updateSweet,
   deleteSweet,
-  purchaseSweet,
-  restockSweet,
-} = require("../controllers/sweetController");
-const { auth, isAdmin } = require("../middleware/authMiddleware");
+  restockSweet
+} = require('../controllers/sweetController');
+const { protect, admin } = require('../middleware/authMiddleware');
 
-const router = express.Router();
+router.get('/search', protect, searchSweets);
+router.get('/', protect, getSweets);
+router.post('/', protect, admin, createSweet); // Only Admin should add
+router.post('/:id/purchase', protect, purchaseSweet);
 
-// Public
-router.get("/", getSweets);
-router.get("/search", searchSweets);
-
-// Protected (user must be logged in)
-router.post("/:id/purchase", auth, purchaseSweet);
-
-// Admin only
-router.post("/", auth, isAdmin, createSweet);
-router.put("/:id", auth, isAdmin, updateSweet);
-router.delete("/:id", auth, isAdmin, deleteSweet);
-router.post("/:id/restock", auth, isAdmin, restockSweet);
+// Admin Routes
+router.delete('/:id', protect, admin, deleteSweet);
+router.put('/:id', protect, admin, updateSweet);
+router.post('/:id/restock', protect, admin, restockSweet);
 
 module.exports = router;

@@ -1,61 +1,33 @@
-import { useEffect, useState } from "react";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import DashboardPage from "./pages/DashboardPage";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext'; // <--- Import this
+
+import Navbar from './components/Navbar';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import AdminPanel from './pages/AdminPanel';
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [mode, setMode] = useState("login"); // "login" or "register"
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
-
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setMode("login");
-  };
-
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Sweet Shop Management</h1>
+    <AuthProvider> {/* <--- Wrap everything here */}
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Navbar />
+          
+          <div className="container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/admin" element={<AdminPanel />} />
+            </Routes>
+          </div>
 
-      {user && (
-        <div>
-          <p>
-            Logged in as: {user.name} ({user.role})
-          </p>
-          <button onClick={handleLogout}>Logout</button>
+          <Toaster position="top-right" />
         </div>
-      )}
-
-      {!user && (
-        <div>
-          <button onClick={() => setMode("login")}>Login</button>
-          <button onClick={() => setMode("register")}>Register</button>
-        </div>
-      )}
-
-      {!user ? (
-        mode === "login" ? (
-          <LoginPage onLoginSuccess={handleLoginSuccess} />
-        ) : (
-          <RegisterPage onRegistered={() => setMode("login")} />
-        )
-      ) : (
-        <DashboardPage user={user} />
-      )}
-    </div>
+      </Router>
+    </AuthProvider>
   );
 }
 
